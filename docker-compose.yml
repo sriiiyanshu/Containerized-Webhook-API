@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webhook-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database
+      - ./data:/data
+    environment:
+      # Webhook secret for HMAC authentication
+      WEBHOOK_SECRET: testsecret
+      # Database URL pointing to persisted volume
+      DATABASE_URL: sqlite+aiosqlite:////data/app.db
+      # Logging level
+      LOG_LEVEL: INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
